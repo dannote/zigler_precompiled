@@ -81,8 +81,7 @@ defmodule ZiglerPrecompiled do
 
     * `:max_retries` — Maximum download retries before giving up. Defaults to `3`.
 
-    * `:variants` — A map of target-specific variant overrides. See
-      `ZiglerPrecompiled.Config` for details.
+    * `:variants` — A map of target-specific variant overrides.
 
   When force build is used, all unrecognized options are passed through to
   `use Zig`.
