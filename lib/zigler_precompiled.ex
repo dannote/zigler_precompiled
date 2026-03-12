@@ -103,17 +103,7 @@ defmodule ZiglerPrecompiled do
   @native_dir "priv/lib"
 
   defmacro __using__(opts) do
-    force =
-      if Code.ensure_loaded?(Zig) do
-        quote do
-          use Zig, only_zigler_opts
-        end
-      else
-        quote do
-          raise "Zigler dependency is needed to force the build. " <>
-                  "Add it to your `mix.exs` file: `{:zigler, \">= 0.0.0\", optional: true}`"
-        end
-      end
+    zig_available? = Code.ensure_loaded?(Zig)
 
     quote do
       require Logger
@@ -137,8 +127,14 @@ defmodule ZiglerPrecompiled do
         end
 
       case ZiglerPrecompiled.__using__(__MODULE__, opts) do
-        {:force_build, only_zigler_opts} ->
-          unquote(force)
+        {:force_build, zigler_opts} ->
+          if unquote(zig_available?) do
+            escaped = Macro.escape(zigler_opts)
+            Module.eval_quoted(__ENV__, quote(do: use(Zig, unquote(escaped))))
+          else
+            raise "Zigler dependency is needed to force the build. " <>
+                    "Add it to your `mix.exs` file: `{:zigler, \">= 0.0.0\", optional: true}`"
+          end
 
         {:ok, config} ->
           @on_load :__load_zigler_precompiled__
