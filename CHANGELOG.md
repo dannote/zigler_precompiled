@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.2
+
+- Replace deprecated `Module.eval_quoted/2` with `Code.eval_quoted_with_env/3` for Elixir 1.18+ compatibility
+
 ## v0.1.1
 
 - Fix macro hygiene bug where `force_build` path passed an unbound variable to Zigler's `__using__` macro

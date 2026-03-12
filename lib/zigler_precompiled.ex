@@ -130,7 +130,7 @@ defmodule ZiglerPrecompiled do
         {:force_build, zigler_opts} ->
           if unquote(zig_available?) do
             escaped = Macro.escape(zigler_opts)
-            Module.eval_quoted(__ENV__, quote(do: use(Zig, unquote(escaped))))
+            Code.eval_quoted_with_env(quote(do: use(Zig, unquote(escaped))), [], __ENV__)
           else
             raise "Zigler dependency is needed to force the build. " <>
                     "Add it to your `mix.exs` file: `{:zigler, \">= 0.0.0\", optional: true}`"
