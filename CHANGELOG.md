@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.1
+
+- Fix macro hygiene bug where `force_build` path passed an unbound variable to Zigler's `__using__` macro
+
 ## v0.1.0
 
 - Initial release
