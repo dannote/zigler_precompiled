@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.1.1
+
+- Fix macro hygiene bug where `force_build` path passed an unbound variable to `Zig.__using__/1`
+
 ## v0.1.0
 
 - Initial release
