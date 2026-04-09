@@ -107,9 +107,11 @@ defmodule ZiglerPrecompiled.Config do
       raise("`:nifs` is required for ZiglerPrecompiled — list all NIF function name/arity pairs")
 
   defp validate_nifs!(nifs) when is_list(nifs) do
-    for {name, arity} = pair <- nifs do
+    for {name, arity_or_opts} = pair <- nifs do
+      arity = nif_arity(arity_or_opts)
+
       unless is_atom(name) and is_integer(arity) and arity >= 0 do
-        raise "`:nifs` entries must be `{atom, non_neg_integer}`, got: #{inspect(pair)}"
+        raise "`:nifs` entries must be `{atom, non_neg_integer}` or `{atom, keyword}` with `:arity`, got: #{inspect(pair)}"
       end
     end
 
@@ -117,6 +119,10 @@ defmodule ZiglerPrecompiled.Config do
   end
 
   defp validate_nifs!(other), do: raise("`:nifs` must be a keyword list, got: #{inspect(other)}")
+
+  defp nif_arity(arity) when is_integer(arity), do: arity
+  defp nif_arity(opts) when is_list(opts), do: Keyword.get(opts, :arity, -1)
+  defp nif_arity(_), do: -1
 
   defp validate_max_retries!(num) when is_integer(num) and num >= 0 and num <= 15, do: num
 

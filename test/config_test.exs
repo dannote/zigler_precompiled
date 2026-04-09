@@ -111,6 +111,22 @@ defmodule ZiglerPrecompiled.ConfigTest do
       end
     end
 
+    test "accepts nifs with keyword options" do
+      config =
+        Config.new(
+          otp_app: :my_app,
+          module: MyApp.Native,
+          base_url: "https://example.com",
+          version: "1.0.0",
+          nifs: [
+            add: 2,
+            render: [arity: 1, concurrency: :dirty_cpu]
+          ]
+        )
+
+      assert config.nifs == [add: 2, render: [arity: 1, concurrency: :dirty_cpu]]
+    end
+
     test "raises on invalid nifs entry" do
       assert_raise RuntimeError, ~r/nifs.*entries/, fn ->
         Config.new(

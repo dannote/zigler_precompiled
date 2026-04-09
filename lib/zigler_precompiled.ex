@@ -168,7 +168,8 @@ defmodule ZiglerPrecompiled do
   end
 
   def generate_nif_stubs(nifs) when is_list(nifs) do
-    for {name, arity} <- nifs do
+    for {name, arity_or_opts} <- nifs do
+      arity = nif_arity(arity_or_opts)
       args = Macro.generate_arguments(arity, __MODULE__)
       marshalled_name = :"marshalled-#{name}"
 
@@ -184,6 +185,9 @@ defmodule ZiglerPrecompiled do
       end
     end
   end
+
+  defp nif_arity(arity) when is_integer(arity), do: arity
+  defp nif_arity(opts) when is_list(opts), do: Keyword.fetch!(opts, :arity)
 
   @doc false
   def __using__(module, opts) do
