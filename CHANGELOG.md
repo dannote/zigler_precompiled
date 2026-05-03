@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.1.4
+
+- Add `mix zigler_precompiled.build` for building a single target artifact without cross-targeting the whole dependency graph
+
+## v0.1.3
+
+- Support per-NIF keyword options in `:nifs` list
+
 ## v0.1.2
 
 - Replace deprecated `Module.eval_quoted/2` with `Code.eval_quoted_with_env/3` for Elixir 1.18+ compatibility
