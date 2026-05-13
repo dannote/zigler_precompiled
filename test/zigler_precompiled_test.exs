@@ -93,6 +93,22 @@ defmodule ZiglerPrecompiledTest do
     end
   end
 
+  describe "normalize_nifs_for_zigler/1" do
+    test "strips :arity from keyword entries and keeps Zigler flags" do
+      nifs = [
+        foo: 2,
+        bar: [:dirty_cpu, arity: 3],
+        baz: [:dirty_io, arity: 1]
+      ]
+
+      assert ZiglerPrecompiled.normalize_nifs_for_zigler(nifs) == [
+               foo: [],
+               bar: [:dirty_cpu],
+               baz: [:dirty_io]
+             ]
+    end
+  end
+
   describe "tar_gz_file_url/2" do
     test "with string base_url" do
       assert {"https://example.com/releases/my_nif.so.tar.gz", []} =

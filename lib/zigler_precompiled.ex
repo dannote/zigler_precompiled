@@ -190,6 +190,17 @@ defmodule ZiglerPrecompiled do
   defp nif_arity(opts) when is_list(opts), do: Keyword.fetch!(opts, :arity)
 
   @doc false
+  def normalize_nifs_for_zigler(nifs) do
+    Enum.map(nifs, fn
+      {name, arity} when is_integer(arity) ->
+        {name, []}
+
+      {name, opts} when is_list(opts) ->
+        {name, Enum.reject(opts, &match?({:arity, _}, &1))}
+    end)
+  end
+
+  @doc false
   def __using__(module, opts) do
     config =
       opts
@@ -207,16 +218,17 @@ defmodule ZiglerPrecompiled do
 
         if config.force_build? do
           zigler_opts =
-            Keyword.drop(opts, [
+            opts
+            |> Keyword.drop([
               :base_url,
               :version,
               :force_build,
               :targets,
               :max_retries,
               :variants,
-              :module_name,
-              :nifs
+              :module_name
             ])
+            |> Keyword.update(:nifs, [], &normalize_nifs_for_zigler/1)
 
           {:force_build, zigler_opts}
         else
