@@ -39,9 +39,16 @@ defmodule Mix.Tasks.ZiglerPrecompiled.Build do
 
     source_file =
       case positional do
-        [file] -> file
-        [] -> Mix.raise("expected source file, e.g. mix zigler_precompiled.build lib/my_app/native.ex --target aarch64-linux-gnu")
-        _ -> Mix.raise("expected exactly one source file, got: #{Enum.join(positional, " ")}")
+        [file] ->
+          file
+
+        [] ->
+          Mix.raise(
+            "expected source file, e.g. mix zigler_precompiled.build lib/my_app/native.ex --target aarch64-linux-gnu"
+          )
+
+        _ ->
+          Mix.raise("expected exactly one source file, got: #{Enum.join(positional, " ")}")
       end
 
     target = Keyword.get(opts, :target) || Mix.raise("--target is required")
@@ -80,7 +87,8 @@ defmodule Mix.Tasks.ZiglerPrecompiled.Build do
   end
 
   defp build_nif(source_file, target) do
-    if target == ZiglerPrecompiled.current_target_triple() do
+    if target == ZiglerPrecompiled.current_target_triple() and
+         not match?({:win32, _name}, :os.type()) do
       Application.delete_env(:zigler, :precompiling)
       module = compile_source_file!(source_file)
       {module, find_native_built_file!(module)}
@@ -103,7 +111,9 @@ defmodule Mix.Tasks.ZiglerPrecompiled.Build do
   end
 
   defp find_native_built_file!(module) do
-    app = Mix.Project.config()[:app] || Mix.raise("Mix project :app is required for native builds")
+    app =
+      Mix.Project.config()[:app] || Mix.raise("Mix project :app is required for native builds")
+
     native_dir = Application.app_dir(app, "priv/lib")
     module_name = to_string(module)
 

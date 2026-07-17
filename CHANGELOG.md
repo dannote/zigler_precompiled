@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Build native Windows artifacts in precompile mode so loaded DLLs do not block replacement.
+
 ## v0.1.4
 
 - Add `mix zigler_precompiled.build` for building a single target artifact without cross-targeting the whole dependency graph
