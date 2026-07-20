@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.1.5
 
 - Build native Windows artifacts in precompile mode so loaded DLLs do not block replacement.
 
