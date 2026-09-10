@@ -123,14 +123,27 @@ defmodule MyApp.Native do
 end
 ```
 
-The `:nifs` option is required. It declares every NIF function as a
-`{name, arity}` pair. ZiglerPrecompiled generates stub functions matching
-Zigler's `marshalled-<name>` convention — these stubs are replaced when the
-precompiled `.so` loads.
+The `:nifs` option is required. It declares every NIF function as either a
+`{name, arity}` pair or a keyword entry containing `:arity`.
+ZiglerPrecompiled generates stub functions matching Zigler's
+`marshalled-<name>` convention — these stubs are replaced when the precompiled
+`.so` loads.
 
-When `force_build: true`, the `:nifs` option is stripped and the remaining
-options are passed to `use Zig`, which uses the Zig compiler for full
-compilation with rich error tracing and type marshalling wrappers.
+Per-NIF Zigler options are forwarded when `force_build: true`. For example, a
+long-running typed NIF can use a dirty scheduler without affecting the
+precompiled stub declaration:
+
+```elixir
+nifs: [long_running: [arity: 1, concurrency: :dirty_cpu]]
+```
+
+Raw Zigler NIFs are not supported: Zigler uses `:arity` to declare the BEAM
+arities of a raw function, while ZiglerPrecompiled uses it to generate a typed
+stub.
+
+When `force_build: true`, package-specific options are stripped and the
+remaining options, including normalized `:nifs`, are passed to `use Zig` for
+full compilation with rich error tracing and type marshalling wrappers.
 
 ### Real-world example: QuickBEAM
 

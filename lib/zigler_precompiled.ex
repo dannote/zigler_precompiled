@@ -45,9 +45,11 @@ defmodule ZiglerPrecompiled do
 
     * `:otp_app` — The OTP app name that the dynamic library will be loaded from.
 
-    * `:nifs` — **Required.** A keyword list of `{function_name, arity}` pairs
-      declaring which NIF functions the module exports. These are used to
-      generate stub functions that are overridden when the NIF loads.
+    * `:nifs` — **Required.** A keyword list declaring which NIF functions the
+      module exports. Entries may be `{function_name, arity}` pairs or keyword
+      options containing `:arity`. The latter can include Zigler NIF options,
+      which are forwarded when building from source. Raw Zigler NIFs are not
+      supported because their `:arity` option has different semantics.
 
     * `:base_url` — Where to find the precompiled NIFs. Accepts:
 
@@ -190,6 +192,17 @@ defmodule ZiglerPrecompiled do
   defp nif_arity(opts) when is_list(opts), do: Keyword.fetch!(opts, :arity)
 
   @doc false
+  def normalize_nifs_for_zigler(nifs) do
+    Enum.map(nifs, fn
+      {name, arity} when is_integer(arity) ->
+        {name, []}
+
+      {name, opts} when is_list(opts) ->
+        {name, Enum.reject(opts, &match?({:arity, _}, &1))}
+    end)
+  end
+
+  @doc false
   def __using__(module, opts) do
     config =
       opts
@@ -207,16 +220,17 @@ defmodule ZiglerPrecompiled do
 
         if config.force_build? do
           zigler_opts =
-            Keyword.drop(opts, [
+            opts
+            |> Keyword.drop([
               :base_url,
               :version,
               :force_build,
               :targets,
               :max_retries,
               :variants,
-              :module_name,
-              :nifs
+              :module_name
             ])
+            |> Keyword.update!(:nifs, &normalize_nifs_for_zigler/1)
 
           {:force_build, zigler_opts}
         else

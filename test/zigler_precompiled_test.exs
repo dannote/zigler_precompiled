@@ -93,6 +93,43 @@ defmodule ZiglerPrecompiledTest do
     end
   end
 
+  describe "normalize_nifs_for_zigler/1" do
+    test "forwards Zigler options and removes typed NIF arities" do
+      nifs = [
+        foo: 2,
+        bar: [:dirty_cpu, arity: 3],
+        baz: [concurrency: :dirty_io, arity: 1]
+      ]
+
+      assert ZiglerPrecompiled.normalize_nifs_for_zigler(nifs) == [
+               foo: [],
+               bar: [:dirty_cpu],
+               baz: [concurrency: :dirty_io]
+             ]
+    end
+  end
+
+  describe "force-build options" do
+    test "forwards normalized NIF options to Zigler" do
+      assert {:force_build, opts} =
+               ZiglerPrecompiled.__using__(ForceBuildOptionsProbe,
+                 otp_app: :zigler_precompiled,
+                 base_url: "https://example.com/releases",
+                 version: "1.0.0",
+                 force_build: true,
+                 nifs: [run: [arity: 1, concurrency: :dirty_cpu]],
+                 optimize: :fast
+               )
+
+      assert opts[:otp_app] == :zigler_precompiled
+      assert opts[:optimize] == :fast
+      assert opts[:nifs] == [run: [concurrency: :dirty_cpu]]
+      refute Keyword.has_key?(opts, :base_url)
+      refute Keyword.has_key?(opts, :version)
+      refute Keyword.has_key?(opts, :force_build)
+    end
+  end
+
   describe "tar_gz_file_url/2" do
     test "with string base_url" do
       assert {"https://example.com/releases/my_nif.so.tar.gz", []} =
