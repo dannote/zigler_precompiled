@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Accept up to 64 KiB of response headers when downloading NIF artifacts. GitHub release redirects now send more than the 10 KiB `:httpc` allows by default.
+
 ## 0.1.6 - 2026-09-10
 
 ### Fixed

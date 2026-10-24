@@ -29,6 +29,28 @@ defmodule ZiglerPrecompiled.DownloadTest do
       assert result.checksum == "sha256:#{expected_hash}"
     end
 
+    test "follows a redirect whose headers exceed httpc's default limit", %{bypass: bypass} do
+      Bypass.expect_once(bypass, "GET", "/download/my_nif.so.tar.gz", fn conn ->
+        conn
+        |> Plug.Conn.put_resp_header("content-security-policy", String.duplicate("a", 12 * 1024))
+        |> Plug.Conn.put_resp_header("location", "http://localhost:#{bypass.port}/artifact")
+        |> Plug.Conn.resp(302, "")
+      end)
+
+      Bypass.expect_once(bypass, "GET", "/artifact", fn conn ->
+        Plug.Conn.resp(conn, 200, "fake nif content")
+      end)
+
+      url = "http://localhost:#{bypass.port}/download/my_nif.so.tar.gz"
+
+      assert [%{path: path}] =
+               ZiglerPrecompiled.download_nif_artifacts_with_checksums!([
+                 {"my_nif.so.tar.gz", {url, []}}
+               ])
+
+      assert File.read!(path) == "fake nif content"
+    end
+
     test "raises on failure without ignore flag", %{bypass: bypass} do
       Bypass.expect(bypass, "GET", "/missing.so.tar.gz", fn conn ->
         Plug.Conn.resp(conn, 404, "not found")

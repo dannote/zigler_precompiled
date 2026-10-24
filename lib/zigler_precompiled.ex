@@ -441,7 +441,8 @@ defmodule ZiglerPrecompiled do
     Logger.debug("Downloading NIF from #{url}")
 
     case :httpc.request(:get, {String.to_charlist(url), request_headers}, http_options,
-           body_format: :binary
+           body_format: :binary,
+           max_header_size: 65_536
          ) do
       {:ok, {{_, 200, _}, _resp_headers, body}} ->
         {:ok, body}
